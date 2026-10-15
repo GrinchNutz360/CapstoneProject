@@ -775,7 +775,7 @@ VideoPlayer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1057183176}
   m_Enabled: 1
-  m_VideoClip: {fileID: 32900000, guid: d5ba8f3105da1c648944571e8ee8f00f, type: 3}
+  m_VideoClip: {fileID: 32900000, guid: 20d3d922e41ca2b4cad2a5c72485d268, type: 3}
   m_TargetCameraAlpha: 1
   m_TargetCamera3DLayout: 0
   m_TargetCamera: {fileID: 0}
@@ -831,8 +831,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DeskScene
   player: {fileID: 1057183177}
-  standUpClip: {fileID: 32900000, guid: fc907197a047fb4439f0659c28663bc7, type: 3}
-  hallwayIdleLoop: {fileID: 0}
+  standUpClip: {fileID: 32900000, guid: 40405392ab18ac64e8d9ebc20f708c06, type: 3}
+  hallwayIdleLoop: {fileID: 32900000, guid: c8c4e066021840943a0f016e686bb492, type: 3}
 --- !u!1 &1693744078
 GameObject:
   m_ObjectHideFlags: 0
