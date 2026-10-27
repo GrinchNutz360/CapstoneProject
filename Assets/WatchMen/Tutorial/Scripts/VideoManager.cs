@@ -29,7 +29,7 @@ public class VideoManager : MonoBehaviour
 
         imageA.enabled = true;
         imageB.enabled = false;
-        if (stillImage != null) stillImage.enabled = false;
+        if (stillImage != null) stillImage.gameObject.SetActive(false);
     }
 
     public void Play(VideoClip clip, bool loop = false, Action onFinished = null)
@@ -46,7 +46,7 @@ public class VideoManager : MonoBehaviour
         playerA.Stop();
         playerB.Stop();
         stillImage.texture = tex;
-        stillImage.enabled = true;
+        stillImage.gameObject.SetActive(true);
     }
 
     IEnumerator PlayRoutine(VideoClip clip, bool loop, Action onFinished)
@@ -62,7 +62,7 @@ public class VideoManager : MonoBehaviour
 
         nextImage.enabled = true;             // show the new clip
         currentImage.enabled = false;         // hide the old one
-        if (stillImage != null) stillImage.enabled = false;
+        if (stillImage != null) stillImage.gameObject.SetActive(false);
         current.Stop();
 
         (current, next) = (next, current);

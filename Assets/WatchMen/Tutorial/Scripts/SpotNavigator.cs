@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -20,6 +21,7 @@ public class SpotNavigator : MonoBehaviour
         public VideoClip overrideTransition;   // leave empty for an instant cut
         public string overrideToSpot;
         public UnityEvent onUsed;
+        public bool overrideFade;
     }
 
     [Serializable]
@@ -36,6 +38,7 @@ public class SpotNavigator : MonoBehaviour
     public VideoManager video;
     public string startSpot = "Desk";
     public List<Spot> spots = new List<Spot>();
+    public CanvasGroup blackOverlay;
 
     public string CurrentId => current != null ? current.id : null;
     public void RaiseFlag(string flag) => SetFlag(flag, true);   // usable from Inspector events
@@ -97,14 +100,39 @@ public class SpotNavigator : MonoBehaviour
 
         var clip = exit.transition;
         var dest = exit.toSpot;
+        bool fade = false;
         if (!string.IsNullOrEmpty(exit.overrideFlag) && flags.Contains(exit.overrideFlag))
         {
             clip = exit.overrideTransition;
             dest = exit.overrideToSpot;
+            fade = exit.overrideFade;
         }
 
         exit.onUsed?.Invoke();
-        PlayThenGoTo(clip, dest);
+        if (fade && blackOverlay != null) StartCoroutine(FadeGo(dest));
+        else PlayThenGoTo(clip, dest);
+    }
+
+    IEnumerator FadeGo(string spotId)
+    {
+        busy = true;
+        HideAllButtons();
+        current?.onLeave.Invoke();
+        yield return FadeTo(1f, 0.25f);
+        EnterSpot(spotId);
+        yield return FadeTo(0f, 0.4f);
+    }
+
+    IEnumerator FadeTo(float target, float time)
+    {
+        float start = blackOverlay.alpha, t = 0f;
+        while (t < time)
+        {
+            t += Time.deltaTime;
+            blackOverlay.alpha = Mathf.Lerp(start, target, t / time);
+            yield return null;
+        }
+        blackOverlay.alpha = target;
     }
 
     void EnterSpot(string id)
