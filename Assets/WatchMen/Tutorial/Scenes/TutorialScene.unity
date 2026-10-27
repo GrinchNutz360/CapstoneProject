@@ -1772,6 +1772,31 @@ MonoBehaviour:
         m_PersistentCalls:
           m_Calls: []
       overrideFade: 0
+  - id: UnderDesk
+    idleLoop: {fileID: 32900000, guid: 449290c2841f2c74ebf16fc906d29e35, type: 3}
+    idleStill: {fileID: 0}
+    onEnter:
+      m_PersistentCalls:
+        m_Calls: []
+    onLeave:
+      m_PersistentCalls:
+        m_Calls: []
+    exits:
+    - label: SitAtDesk
+      button: {fileID: 1718078453}
+      transition: {fileID: 32900000, guid: e668891f4fe38d5458ade8811fcb55a9, type: 3}
+      toSpot: Desk
+      requiresFlag: 
+      onBlocked:
+        m_PersistentCalls:
+          m_Calls: []
+      overrideFlag: 
+      overrideTransition: {fileID: 0}
+      overrideToSpot: 
+      onUsed:
+        m_PersistentCalls:
+          m_Calls: []
+      overrideFade: 0
   blackOverlay: {fileID: 0}
 --- !u!4 &1181051310
 Transform:
