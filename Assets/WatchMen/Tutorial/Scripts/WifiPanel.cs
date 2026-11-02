@@ -4,36 +4,35 @@ using UnityEngine.Events;
 public class WifiPanel : MonoBehaviour
 {
     public SpotNavigator nav;
-    public GameObject panel;              // the wifi minigame UI
-    public AudioSource voice;
-    public AudioClip workingFineLine;
+    public GameObject panel;           // WifiPanelRoot
+    public GameObject tunerRoot;       // has the WifiTuner script
+    public GameObject okScreen;        // your OkText object
+    public AudioSource voice;          // optional
+    public AudioClip workingFineLine;  // optional
     public UnityEvent onFixed;
 
     void Start() => panel.SetActive(false);
 
-    public void OnRouterClicked()         // the router button calls this
+    // WifiDoor spot > On Enter
+    public void Open()
     {
-        if (!nav.HasFlag("wifiBroken"))
-        {
-            voice.PlayOneShot(workingFineLine);
-            return;
-        }
-        nav.Freeze();
+        bool broken = nav.HasFlag("wifiBroken");
         panel.SetActive(true);
+        tunerRoot.SetActive(broken);
+        okScreen.SetActive(!broken);
+        if (!broken && voice != null && workingFineLine != null)
+            voice.PlayOneShot(workingFineLine);
     }
 
-    public void Close()                   // a close/back button on the panel calls this
-    {
-        panel.SetActive(false);
-        nav.Unfreeze();
-    }
+    // WifiDoor spot > On Leave
+    public void Hide() => panel.SetActive(false);
 
-    public void Complete()                // WifiTuner calls this when you connect
+    // WifiTuner calls this when you connect
+    public void Complete()
     {
         nav.SetFlag("wifiBroken", false);
         nav.SetFlag("wifiFixed");
         panel.SetActive(false);
-        nav.Unfreeze();
         onFixed.Invoke();
     }
 }
