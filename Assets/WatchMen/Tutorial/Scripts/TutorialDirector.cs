@@ -57,15 +57,18 @@ public class TutorialDirector : MonoBehaviour
 
     // ---------- hooks other scripts call ----------
     public void NotifyCameraOpened(string camId) { currentCam = camId; PlayFeed(camId); }
+    public void NotifyCameraClosed() => currentCam = null;
     public void NotifyChallengeDone() => challengesDone++;
     public void Retry() => SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-
+    bool InComputerArea()
+    {
+        string id = nav.CurrentId;
+        return id == "Computer" || (id != null && id.StartsWith("Cam"));
+    }
     void Start() => StartCoroutine(RunTutorial());
 
     void Update()
     {
-        if (nav.CurrentId != "Computer") currentCam = null;
-
         if (Input.GetKeyDown(KeyCode.Space))
         {
             if (flashWindowOpen && currentCam == flashCam) flashed = true;
@@ -134,7 +137,7 @@ public class TutorialDirector : MonoBehaviour
             nav.SetFlag("killerAtDoor");
             nav.Unfreeze();
             float waited = 0f;
-            while (nav.CurrentId != "DeskKiller" && waited < 10f) { waited += Time.deltaTime; yield return null; }
+            while (nav.CurrentId != "DeskKiller" && waited < 3f) { waited += Time.deltaTime; yield return null; }
             nav.Freeze();
             if (nav.CurrentId != "DeskKiller") nav.PlayThenGoTo(null, "DeskKiller");
             yield return Say("killer_grabbed");       // "should I grab it?"
@@ -248,8 +251,8 @@ public class TutorialDirector : MonoBehaviour
 
     IEnumerator WaitForExitComputer()
     {
-        while (nav.CurrentId != "Computer") yield return null;
-        while (nav.CurrentId == "Computer") yield return null;
+        while (!InComputerArea()) yield return null;
+        while (InComputerArea()) yield return null;
     }
 
     IEnumerator WaitFlag(string flag, string hintKey, float every)
