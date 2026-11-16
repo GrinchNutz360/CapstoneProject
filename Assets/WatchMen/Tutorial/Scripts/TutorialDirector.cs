@@ -147,7 +147,17 @@ public class TutorialDirector : MonoBehaviour
             yield break;
         }
 
+        // delivery
+        yield return WaitForSpot("Desk");
+        yield return Say("package_where");       // "Where does this go? Check the sticker (Tab)"
+        yield return WaitFlag("cardChecked", "card_hint", 15f);
+        yield return Say("package_elevator");    // "11th floor, take the elevator"
+        yield return WaitFlag("packageDelivered", "deliver_hint", 25f);
+        yield return WaitForSpot("Floor11");
+        yield return Say("delivery_paid");
+
         // 4. Wifi
+        yield return WaitForSpot("Computer");
         yield return Say("wifi_out");
         nav.SetFlag("wifiBroken");
         yield return WaitForSpot("WifiDoor");

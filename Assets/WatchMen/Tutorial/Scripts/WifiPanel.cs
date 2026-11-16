@@ -32,7 +32,6 @@ public class WifiPanel : MonoBehaviour
     {
         nav.SetFlag("wifiBroken", false);
         nav.SetFlag("wifiFixed");
-        panel.SetActive(false);
-        onFixed.Invoke();
+        onFixed.Invoke();     // scary sounds go here
     }
 }

@@ -31,6 +31,7 @@ public class WifiTuner : MonoBehaviour
         done = false;
         if (staticLoop) staticLoop.Play();
         if (lockTone) lockTone.Play();
+        dial.interactable = true;
         Refresh();
     }
 
@@ -73,5 +74,11 @@ public class WifiTuner : MonoBehaviour
         else statusText.text = "Searching...";
     }
 
-    void Finish() => wifiPanel.Complete();
+    void Finish()
+    {
+        if (staticLoop) staticLoop.Stop();
+        if (lockTone) lockTone.Stop();
+        dial.interactable = false;
+        wifiPanel.Complete();
+    }
 }
