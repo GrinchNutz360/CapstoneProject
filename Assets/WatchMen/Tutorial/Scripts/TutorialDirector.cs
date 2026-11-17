@@ -153,7 +153,7 @@ public class TutorialDirector : MonoBehaviour
         yield return WaitFlag("cardChecked", "card_hint", 15f);
         yield return Say("package_elevator");    // "11th floor, take the elevator"
         yield return WaitFlag("packageDelivered", "deliver_hint", 25f);
-        yield return WaitForSpot("Floor11");
+        yield return WaitForSpot("ElevatorFloor11");
         yield return Say("delivery_paid");
 
         // 4. Wifi
@@ -163,19 +163,20 @@ public class TutorialDirector : MonoBehaviour
         yield return WaitForSpot("WifiDoor");
         yield return Say("wifi_how");                 // friend explains the minigame
         yield return new WaitUntil(() => nav.HasFlag("wifiFixed"));
-        yield return WaitForSpot("MiddleStairs");     // walked back, killer is waiting
+        yield return Say("wifi_fixed");
+        yield return WaitForSpot("MiddleStairsKiller");     // walked back, killer is waiting
 
         // 5. Run
-        nav.Freeze();
         Speak("run_now");
-        runPrompt.SetActive(true); ran = false; runWindowOpen = true;
+        runPrompt.SetActive(true);
         float t = 0f;
-        while (!ran && t < runWindow) { t += Time.deltaTime; yield return null; }
-        runWindowOpen = false; runPrompt.SetActive(false);
-        if (!ran) { yield return Die(dontRunDeath, "death_stairs"); yield break; }
+        while (!nav.HasFlag("ranUp") && t < runWindow) { t += Time.deltaTime; yield return null; }
+        runPrompt.SetActive(false);
 
-        yield return PlayClip(runUpStairs);
-        video.Play(keepingDoorClosed, true);
+        if (!nav.HasFlag("ranUp")) { yield return Die(dontRunDeath, "death_stairs"); yield break; }
+
+        yield return WaitForSpot("DoorHold");   // RunUpStairs finished, door loop is playing
+        nav.Freeze();
         bool held = false;
         yield return DoorQte(r => held = r);
         if (!held) { yield return Die(null, "death_door"); yield break; }
