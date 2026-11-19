@@ -55,6 +55,7 @@ public class TutorialDirector : MonoBehaviour
     bool runWindowOpen, ran;
     bool qteActive; float qteMeter;
 
+
     // ---------- hooks other scripts call ----------
     public void NotifyCameraOpened(string camId) { currentCam = camId; PlayFeed(camId); }
     public void NotifyCameraClosed() => currentCam = null;
@@ -77,8 +78,34 @@ public class TutorialDirector : MonoBehaviour
         }
     }
 
+    bool dead;
+
     // ---------- the story ----------
     IEnumerator RunTutorial()
+    {
+        yield return null;                                   // let the Navigator finish Start
+        int s = PlayerPrefs.GetInt("debugStage", 1);
+        ApplyStartState(s);
+
+        if (s <= 1) { yield return Stage1_Call(); if (dead) yield break; }
+        if (s <= 2) { yield return Stage2_Gate(); if (dead) yield break; }
+        if (s <= 3) { yield return Stage3_Package(); if (dead) yield break; }
+        if (s <= 4) { yield return Stage4_Delivery(); if (dead) yield break; }
+        if (s <= 5) { yield return Stage5_Wifi(); if (dead) yield break; }
+        if (s <= 6) { yield return Stage6_RunDoor(); if (dead) yield break; }
+        yield return Stage7_HideEnd();
+    }
+
+    void ApplyStartState(int s)
+    {
+        if (s >= 2) { nav.SetFlag("homeworkUnlocked"); nav.SetFlag("camerasUnlocked"); challengesDone = 1; }
+        if (s >= 4) { nav.SetFlag("packageGrabbed"); }
+        if (s >= 5) { nav.SetFlag("packageGrabbed", false); nav.SetFlag("packageDelivered"); nav.SetFlag("cardChecked"); }
+        if (s >= 6) { nav.SetFlag("wifiFixed"); nav.PlayThenGoTo(null, "MiddleStairsKiller"); }
+    }
+
+
+    IEnumerator Stage1_Call()
     {
         // 1. Call + homework (player can roam the whole time)
         yield return new WaitForSeconds(1.5f);
@@ -88,8 +115,10 @@ public class TutorialDirector : MonoBehaviour
         nav.SetFlag("homeworkUnlocked");
         yield return new WaitUntil(() => challengesDone >= 1);
         yield return Say("homework_great");
+    }
 
-        // 2. Gate
+    IEnumerator Stage2_Gate()
+    { // 2. Gate
         nav.SetFlag("camerasUnlocked");
         forcedCam = gateCamId; forcedClip = gateBreakingIn;
         yield return Say("check_camera");
@@ -103,8 +132,10 @@ public class TutorialDirector : MonoBehaviour
         nav.Unfreeze();
         yield return Say("gate_exit_computer");
         yield return WaitForExitComputer();
+    }
 
-        // 3. Student
+    IEnumerator Stage3_Package()
+    {  // 3. Student
         nav.Freeze();
         yield return PlayClip(studentScare);
         yield return Say("student_package");
@@ -144,10 +175,13 @@ public class TutorialDirector : MonoBehaviour
             yield return PlayClip(killerTurnLeft);
             yield return Say("killer_rude");          // "it would be rude not to"
             yield return Die(killerGrab, "death_package");
+            dead = true;
             yield break;
         }
+    }
 
-        // delivery
+    IEnumerator Stage4_Delivery()
+    { // 4. delivery
         yield return WaitForSpot("Desk");
         yield return Say("package_where");       // "Where does this go? Check the sticker (Tab)"
         yield return WaitFlag("cardChecked", "card_hint", 15f);
@@ -155,8 +189,10 @@ public class TutorialDirector : MonoBehaviour
         yield return WaitFlag("packageDelivered", "deliver_hint", 25f);
         yield return WaitForSpot("ElevatorFloor11");
         yield return Say("delivery_paid");
+    }
 
-        // 4. Wifi
+    IEnumerator Stage5_Wifi()
+    { // 5. Wifi
         yield return WaitForSpot("Computer");
         yield return Say("wifi_out");
         nav.SetFlag("wifiBroken");
@@ -165,23 +201,28 @@ public class TutorialDirector : MonoBehaviour
         yield return new WaitUntil(() => nav.HasFlag("wifiFixed"));
         yield return Say("wifi_fixed");
         yield return WaitForSpot("MiddleStairsKiller");     // walked back, killer is waiting
+    }
 
-        // 5. Run
+    IEnumerator Stage6_RunDoor()
+    {  // 6. Run
         Speak("run_now");
         runPrompt.SetActive(true);
         float t = 0f;
         while (!nav.HasFlag("ranUp") && t < runWindow) { t += Time.deltaTime; yield return null; }
         runPrompt.SetActive(false);
 
-        if (!nav.HasFlag("ranUp")) { yield return Die(dontRunDeath, "death_stairs"); yield break; }
+        if (!nav.HasFlag("ranUp")) { yield return Die(dontRunDeath, "death_stairs"); dead = true;  yield break; }
+
 
         yield return WaitForSpot("DoorHold");   // RunUpStairs finished, door loop is playing
         nav.Freeze();
         bool held = false;
         yield return DoorQte(r => held = r);
-        if (!held) { yield return Die(null, "death_door"); yield break; }
+        if (!held) { yield return Die(null, "death_door"); dead = true; yield break; }
+    }
 
-        // 6. Back to the desk, hide tutorial, finish homework
+    IEnumerator Stage7_HideEnd()
+    { // 7. Back to the desk, hide tutorial, finish homework
         yield return PlayClip(walkBackToDesk);
         yield return PlayClip(sitAtDesk);
         nav.PlayThenGoTo(null, "Desk");
